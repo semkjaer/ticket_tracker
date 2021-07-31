@@ -28,10 +28,10 @@ class TicketswapSpider(scrapy.Spider):
         chromedriver.get('https://www.ticketswap.nl/browse')
 
         urls = []
-        for category in ['Festivals']:#, 'Concerten', 'Clubavonden']: # zoek op type event
+        for category in ['Festivals', 'Concerten', 'Clubavonden']: # zoek op type event
             chromedriver.find_element(By.XPATH, '//h4[text()="Categorie"]').click()
             chromedriver.find_element(By.XPATH, f'//button[text()="{category}"]').click()
-            for location in locations[:2]: # zoek op locatie
+            for location in locations: # zoek op locatie
                 chromedriver.find_element(By.XPATH, '//h4[text()="Locatie"]').click()
                 chromedriver.find_element(By.XPATH, '//input[@id="citysearch"]').clear()
                 chromedriver.find_element(By.XPATH, '//input[@id="citysearch"]').send_keys(f'{location}')
@@ -42,14 +42,14 @@ class TicketswapSpider(scrapy.Spider):
 
                 # click 'laat meer zien'
                 # klikt op de 'laat meer zien' knop tot alle evenementen vertoond worden
-                # while True:
-                #     try:
-                #         chromedriver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
-                #         button = chromedriver.find_element(By.XPATH, '//h4[text()="Laat meer zien"]')
-                #         button.click()
-                #         time.sleep(1)
-                #     except:
-                #         break
+                while True:
+                    try:
+                        chromedriver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+                        button = chromedriver.find_element(By.XPATH, '//h4[text()="Laat meer zien"]')
+                        button.click()
+                        time.sleep(1)
+                    except:
+                        break
 
                 links = chromedriver.find_elements(By.XPATH, '//a[@role="link"]')
                 for link in links:

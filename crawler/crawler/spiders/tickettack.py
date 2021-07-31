@@ -58,9 +58,9 @@ class TicketswapSpider(scrapy.Spider):
         stats = StatsItem()
         stats['event_href'] = response.url.split('/nl/')[1].split('/')[0]
         stats['ticket_href'] = response.url.split('/nl/')[1].split('/')[1]
-        stats['beschikbaar'] = response.xpath('./cite[contains(text(), "Aangeboden")]/following-sibling::span/text()').get()
-        stats['gezocht'] = response.xpath('./cite[contains(text(), "Verkocht")]/following-sibling::span/text()').get()
-        stats['verkocht'] = response.xpath('./cite[contains(text(), "Gezocht")]/following-sibling::span/text()').get()
+        stats['beschikbaar'] = response.xpath('//cite[contains(text(), "Aangeboden")]/following-sibling::span/text()').get()
+        stats['gezocht'] = response.xpath('//cite[contains(text(), "Verkocht")]/following-sibling::span/text()').get()
+        stats['verkocht'] = response.xpath('//cite[contains(text(), "Gezocht")]/following-sibling::span/text()').get()
         stats['time'] = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
         stats['platform'] = 'TT'
         yield stats
