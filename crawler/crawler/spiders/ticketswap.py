@@ -17,9 +17,14 @@ class TicketswapSpider(scrapy.Spider):
 
     def start_requests(self):
         '''Verzamelt links van de ticketswap event pagina'''
+        platforms = {
+            'linux' : '/usr/lib/chromium-browser/chromedriver',
+            'win32' : r'C:\Users\SemKj\Downloads\chromedriver_win32\chromedriver'
+        }
         options = Options()
-        # options.headless = True
-        chromedriver = webdriver.Chrome(executable_path=r'C:\Users\SemKj\Downloads\chromedriver_win32\chromedriver', options=options)
+        options.headless = True
+        chromedriver = webdriver.Chrome(executable_path=platforms[sys.platform], options=options)
+
         chromedriver.get('https://www.ticketswap.nl/browse')
 
         urls = []

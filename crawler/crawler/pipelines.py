@@ -9,21 +9,31 @@ from itemadapter import ItemAdapter
 from .items import EventItem, StatsItem
 import logging
 import pymongo
-import csv
 
 class CrawlerPipeline:
+    # def process_item(self, item, spider):
+    #     return item
 
-    def CSVWriter(self, item, file):
-        fields = [x for x in item.keys()]
-        with open(file,'a+') as f:
-            f.write("{}\n".format(','.join(str(item[field]) for field in fields)))
+    # def __init__(self, mongo_uri, mongo_db):
+    #     self.mongo_uri = mongo_uri
+    #     self.mongo_db = mongo_db
 
+    # @classmethod
+    # def from_crawler(cls, crawler):
+    #     return cls(
+    #         mongo_uri=crawler.settings.get('MONGO_URI'),
+    #         mongo_db=crawler.settings.get('MONGO_DATABASE', 'items')
+    #     )
+
+    # def open_spider(self, spider):
+    #     self.client = pymongo.MongoClient(self.mongo_uri)
+    #     self.db = self.client[self.mongo_db]
+
+    # def close_spider(self, spider):
+    #     self.client.close()
 
     def process_item(self, item, spider):
         if isinstance(item, EventItem):
-            self.CSVWriter(item, 'events.csv')
             return item
-
         elif isinstance(item, StatsItem):
-            self.CSVWriter(item, 'stats.csv')
             return item
