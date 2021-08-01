@@ -28,10 +28,10 @@ class TicketswapSpider(scrapy.Spider):
         chromedriver.get('https://www.ticketswap.nl/browse')
 
         urls = []
-        for category in ['Festivals', 'Concerten']: # zoek op type event
+        for category in ['Festivals', 'Concerten']: # zoek op type event # optioneel: 'Clubavonden'
             chromedriver.find_element(By.XPATH, '//h4[text()="Categorie"]').click()
             chromedriver.find_element(By.XPATH, f'//button[text()="{category}"]').click()
-            for location in locations[:1]: # zoek op locatie
+            for location in locations: # zoek op locatie uit database.py
                 chromedriver.find_element(By.XPATH, '//h4[text()="Locatie"]').click()
                 chromedriver.find_element(By.XPATH, '//input[@id="citysearch"]').clear()
                 chromedriver.find_element(By.XPATH, '//input[@id="citysearch"]').send_keys(f'{location}')
