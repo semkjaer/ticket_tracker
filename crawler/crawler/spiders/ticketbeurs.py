@@ -21,7 +21,7 @@ class TicketswapSpider(scrapy.Spider):
                                     meta={'stats': stats})
 
     def parse_ticket(self, response):
-        item = EventItem()
+        item = EventItem(url=response.url, platform='TB')
         item['name'] = response.xpath('//center/h1/text()').get()
         item['event_href'] = response.url.split('=')[1]
         item['ticket_href'] = item['event_href']

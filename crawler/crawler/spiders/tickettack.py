@@ -12,13 +12,13 @@ class TicketswapSpider(scrapy.Spider):
         events = response.xpath('//li[contains(@onclick, "location.href=")]')
         for event in events:
             item = EventItem()
+            item['platform'] = 'TT'
             item['name'] = event.xpath('.//h3/text()').get()
             info = event.xpath('.//p/text()').get().split(',')
             item['event_date'] = info[0]
             item['location'] = info[1].strip()
             item['city'] = info[2].strip()
-            item['event_href'] = event.attrib['onclick'].split("'")[1]
-            url = 'https://www.tickettack.nl//nl/' + item['event_href']
+            url = 'https://www.tickettack.nl//nl/' + event.attrib['onclick'].split("'")[1]
             yield scrapy.Request(url, callback=self.parse_event, meta={'item': item})
         
         load_more = response.xpath('//a[@onclick="moreEvents()"]')
@@ -35,7 +35,7 @@ class TicketswapSpider(scrapy.Spider):
         if ticket_data:
             stats = StatsItem()
             stats['event_href'] = response.url.split('/nl/')[1].split('/')[0]
-            stats['ticket_href'] = response.url.split('/nl/')[1].split('/')[0]
+            stats['ticket_href'] = stats['event_href']
             stats['beschikbaar'] = ticket_data.xpath('./cite[contains(text(), "Aangeboden")]/following-sibling::span/text()').get()
             stats['gezocht'] = ticket_data.xpath('./cite[contains(text(), "Verkocht")]/following-sibling::span/text()').get()
             stats['verkocht'] = ticket_data.xpath('./cite[contains(text(), "Gezocht")]/following-sibling::span/text()').get()
@@ -43,7 +43,9 @@ class TicketswapSpider(scrapy.Spider):
             stats['platform'] = 'TT'
             yield stats
 
-            item['ticket_href'] = item['event_href']
+            item['url'] = response.url
+            item['event_href'] = stats['event_href']
+            item['ticket_href'] = stats['event_href']
             yield item
         else:
             for ticket in response.xpath('//ul[@id="loadingTickets"]/li'):
