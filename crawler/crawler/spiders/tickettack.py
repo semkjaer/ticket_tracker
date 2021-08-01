@@ -50,10 +50,11 @@ class TicketswapSpider(scrapy.Spider):
         else:
             for ticket in response.xpath('//ul[@id="loadingTickets"]/li'):
                 ticket_item = item.copy()
-                link =  ticket.attrib['onclick'].split("'")[1]
-                ticket_item['ticket_href'] = link.split('/nl/')[1].split('/')[1]
+                ticket_item['url'] = ticket.attrib['onclick'].split("'")[1]
+                ticket_item['event_href'] = ticket_item['url'].split('/nl/')[1].split('/')[0]
+                ticket_item['ticket_href'] = ticket_item['url'].split('/nl/')[1].split('/')[1]
                 yield ticket_item
-                yield scrapy.Request(link, callback=self.parse_tickets)
+                yield scrapy.Request(ticket_item['url'], callback=self.parse_tickets)
                 
 
     def parse_tickets(self, response):

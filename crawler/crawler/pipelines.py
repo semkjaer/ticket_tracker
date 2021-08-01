@@ -32,7 +32,7 @@ class CrawlerPipeline:
 
     def process_item(self, item, spider):
         if isinstance(item, EventItem):
-            self.db['events'].insert(dict(item))
+            self.db['events'].replace_one({'url': item['url']}, item, upsert=True)
             logging.debug("Post added to MongoDB")
             return item
         elif isinstance(item, StatsItem):
