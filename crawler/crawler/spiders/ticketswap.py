@@ -28,10 +28,10 @@ class TicketswapSpider(scrapy.Spider):
         chromedriver.get('https://www.ticketswap.nl/browse')
 
         urls = []
-        for category in ['Festivals', 'Concerten']: # zoek op type event # optioneel: 'Clubavonden'
+        for category in ['Festivals', 'Clubavonden']: # zoek op type event # optioneel: 'Clubavonden'
             chromedriver.find_element(By.XPATH, '//h4[text()="Categorie"]').click()
             chromedriver.find_element(By.XPATH, f'//button[text()="{category}"]').click()
-            for location in locations: # zoek op locatie uit database.py
+            for location in locations[:1]: # zoek op locatie uit database.py
                 chromedriver.find_element(By.XPATH, '//h4[text()="Locatie"]').click()
                 chromedriver.find_element(By.XPATH, '//input[@id="citysearch"]').clear()
                 chromedriver.find_element(By.XPATH, '//input[@id="citysearch"]').send_keys(f'{location}')
@@ -61,7 +61,6 @@ class TicketswapSpider(scrapy.Spider):
         print(f'\n{len(urls)} links found\n')
         for url in urls:
             yield scrapy.Request(url, callback=self.parse_events)
-        
 
 
     def parse_events(self, response):
@@ -72,7 +71,7 @@ class TicketswapSpider(scrapy.Spider):
         location =  response.xpath('//p[@class="css-ickv75 e1gtd2336"]')
         item['location'], item['city'] = location.xpath('./a/text()').getall()
         item['country'] = location.xpath('./text()').getall()[-1][2:]
-
+        item['event_date'] = response.xpath('//p[@class="css-ktbls8 e1gtd2335"]/text()').get()
 
         if 'Normaal' in response.xpath('//h2/text()').getall():
             item['url'] = response.url
@@ -89,7 +88,6 @@ class TicketswapSpider(scrapy.Spider):
             stats['time'] = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
             stats['platform'] = 'TS'
             yield stats
-        
         else:
             ticket_types = response.xpath('//ul[@data-testid="event-types-list"]/li')
             for ticket in ticket_types:
