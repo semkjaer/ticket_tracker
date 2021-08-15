@@ -90,26 +90,28 @@ class TicketswapSpider(scrapy.Spider):
             stats['gezocht'] = response.xpath('//h6[contains(text(), "gezocht")]/preceding-sibling::span/text()').get()
             stats['time'] = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
             stats['platform'] = 'TS'
+            # zoekt de goedkoopst aangeboden ticketprijs als die er is
             price = response.xpath('//ul[preceding-sibling::h3[contains(text(), "Beschikbare tickets")]]//strong/text()').get()
             if price:
                 stats['price'] = float(re.sub(r',', '.', re.sub(r'[^0-9,]', '', price)))
-
-            json_data = response.xpath('//script[@type="application/ld+json"]/text()').get()
-            if json_data:
+            # zoekt de ticketprijs van het meest recent verkochte ticket
+            try:
+                json_data = response.xpath('//script[@type="application/ld+json"]/text()').get()
                 data = json.loads(json_data)
                 id = data['itemListElement'][-1]['item']['@id'].split('/')[-1]
                 payload = [{'operationName': "getSoldListings",
                     'query': "query getSoldListings($id: ID!, $first: Int, $after: String) {\n  node(id: $id) {\n    ... on EventType {\n      id\n      slug\n      title\n      soldListings: listings(\n        first: $first\n        filter: {listingStatus: SOLD}\n        after: $after\n      ) {\n        ...listings\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment listings on ListingConnection {\n  edges {\n    node {\n      ...listingList\n      __typename\n    }\n    __typename\n  }\n  pageInfo {\n    endCursor\n    hasNextPage\n    __typename\n  }\n  __typename\n}\n\nfragment listingList on PublicListing {\n  id\n  hash\n  description\n  isPublic\n  status\n  dateRange {\n    startDate\n    endDate\n    __typename\n  }\n  event {\n    id\n    name\n    startDate\n    endDate\n    slug\n    status\n    location {\n      id\n      name\n      city {\n        id\n        name\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n  eventType {\n    id\n    title\n    startDate\n    endDate\n    __typename\n  }\n  seller {\n    id\n    firstname\n    avatar\n    __typename\n  }\n  tickets(first: 99) {\n    edges {\n      node {\n        id\n        status\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n  numberOfTicketsInListing\n  numberOfTicketsStillForSale\n  price {\n    originalPrice {\n      ...money\n      __typename\n    }\n    totalPriceWithTransactionFee {\n      ...money\n      __typename\n    }\n    sellerPrice {\n      ...money\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n\nfragment money on Money {\n  amount\n  currency\n  __typename\n}\n",
                     'variables': {'id': id, 'first': 1}}]
                 yield scrapy.Request('https://api.ticketswap.com/graphql/public/batch?flow=', callback=self.parse_json, method='POST', 
-                    body=json.dumps(payload), headers={'Content-Type': 'application/json'}, meta = {'stats': stats})
-
+                    body=json.dumps(payload), headers={'Content-Type': 'application/json'}, meta={'stats': stats})
+            except:
+                yield stats
         else:
             ticket_types = response.xpath('//ul[@data-testid="event-types-list"]/li')
             for ticket in ticket_types:
                 ticket_item = item.copy()
                 link = ticket.xpath('./a/@href').get()
-                yield scrapy.Request(link, callback=self.parse_tickets, meta = {'item': ticket_item})
+                yield scrapy.Request(link, callback=self.parse_tickets, meta={'item': ticket_item})
 
 
 
@@ -128,9 +130,11 @@ class TicketswapSpider(scrapy.Spider):
         stats['gezocht'] = response.xpath('//h6[contains(text(), "gezocht")]/preceding-sibling::span/text()').get()
         stats['time'] = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
         stats['platform'] = 'TS'
+        # zoekt de goedkoopst aangeboden ticketprijs als die er is
         price = response.xpath('//ul[preceding-sibling::h3[contains(text(), "Beschikbare tickets")]]//strong/text()').get()
         if price:
             stats['price'] = float(re.sub(r',', '.', re.sub(r'[^0-9,]', '', price)))
+        # zoekt de ticketprijs van het meest recent verkochte ticket
         try:
             json_data = response.xpath('//script[@type="application/ld+json"]/text()').get()
             data = json.loads(json_data)
