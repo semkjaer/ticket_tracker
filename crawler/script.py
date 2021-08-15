@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import os
 
 spiders = os.popen('scrapy list').read()
