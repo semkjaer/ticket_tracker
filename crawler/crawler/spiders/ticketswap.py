@@ -1,5 +1,6 @@
 from ..items import EventItem, StatsItem
 import scrapy
+import re
 import os
 import sys
 import time
@@ -31,7 +32,7 @@ class TicketswapSpider(scrapy.Spider):
         for category in ['Festivals']:#, 'Clubavonden']: # zoek op type event # optioneel: 'Clubavonden'
             chromedriver.find_element(By.XPATH, '//h4[text()="Categorie"]').click()
             chromedriver.find_element(By.XPATH, f'//button[text()="{category}"]').click()
-            for location in locations: # zoek op locatie uit database.py
+            for location in locations[:1]: # zoek op locatie uit database.py
                 chromedriver.find_element(By.XPATH, '//h4[text()="Locatie"]').click()
                 chromedriver.find_element(By.XPATH, '//input[@id="citysearch"]').clear()
                 chromedriver.find_element(By.XPATH, '//input[@id="citysearch"]').send_keys(f'{location}')
@@ -87,6 +88,9 @@ class TicketswapSpider(scrapy.Spider):
             stats['gezocht'] = response.xpath('//h6[contains(text(), "gezocht")]/preceding-sibling::span/text()').get()
             stats['time'] = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
             stats['platform'] = 'TS'
+            price = response.xpath('//ul[preceding-sibling::h3[contains(text(), "Beschikbare tickets")]]//strong/text()').get()
+            if price:
+                stats['price'] = float(re.sub(r',', '.', re.sub(r'[^0-9,]', '', price)))
             yield stats
         else:
             ticket_types = response.xpath('//ul[@data-testid="event-types-list"]/li')
@@ -106,6 +110,9 @@ class TicketswapSpider(scrapy.Spider):
         stats['gezocht'] = response.xpath('//h6[contains(text(), "gezocht")]/preceding-sibling::span/text()').get()
         stats['time'] = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
         stats['platform'] = 'TS'
+        price = response.xpath('//ul[preceding-sibling::h3[contains(text(), "Beschikbare tickets")]]//strong/text()').get()
+        if price:
+            stats['price'] = float(re.sub(r',', '.', re.sub(r'[^0-9,]', '', price)))
         yield stats
 
         item = response.meta['item']

@@ -25,3 +25,4 @@ class StatsItem(scrapy.Item):
     gezocht = scrapy.Field()
     time = scrapy.Field()
     platform = scrapy.Field()
+    price = scrapy.Field()

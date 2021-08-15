@@ -21,7 +21,8 @@ class TicketswapSpider(scrapy.Spider):
                                     meta={'stats': stats})
 
     def parse_ticket(self, response):
-        item = EventItem(url=response.url, platform='TB')
+        item = EventItem(url=response.url, platform='TB')        
+
         item['name'] = response.xpath('//center/h1/text()').get()
         item['event_href'] = response.url.split('=')[1]
         item['ticket_href'] = item['event_href']
@@ -39,4 +40,15 @@ class TicketswapSpider(scrapy.Spider):
         stats['ticket_href'] = item['event_href']
         stats['platform'] = 'TB'
         stats['time'] = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
+
+        tickets = response.xpath('//div[@class="row"][descendant::div[@class="hidden-xs"] and descendant::a[@class="btn btn-primary"]]')
+        prices = []
+        for ticket in tickets:
+            price = ticket.xpath('.//span[@class="titlefont"]/span/text()').get().split(',')[0]
+            price = int(re.sub(r'[^0-9]', '', price))
+            amount = int(ticket.xpath('.//span[@class="greyfont"]/span/text()').get())
+            prices.append(price/amount)
+        if prices:
+            stats['price'] = min(prices)
+            
         yield stats
