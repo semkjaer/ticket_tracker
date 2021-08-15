@@ -26,3 +26,4 @@ class StatsItem(scrapy.Item):
     time = scrapy.Field()
     platform = scrapy.Field()
     price = scrapy.Field()
+    last_price = scrapy.Field()
